@@ -3,7 +3,7 @@ time(0..10).
 %-------------------------
 %Background knowledge
 %Persons
-person(m1)
+person(m1).
 person(m2).
 person(m3).
 person(w1).
@@ -34,15 +34,25 @@ opposite(left,right).
 opposite(right,left).
 %-------------------------
 %Initial State
-at_bank(person(X),left,0) :- person(X).
-at_bank(boat,left,0).
+at_bank(left,X,0) :- person(X).
+at_bank(left,boat,0).
 %-------------------------
 %Inertia
-at_bank(X,B,T+1) :- at_bank(X,B,T), time(T), not -at_bank(X,B,T+1).
-at_bank(boat,B,T+1) :- at_bank(boat,B,T), time(T), not -at_bank(boat,B,T+1).
+at_bank(B,X,T+1) :- at_bank(B,X,T), time(T), not -at_bank(B,X,T+1).
+at_bank(B,boat,T+1) :- at_bank(B,boat,T), time(T), not -at_bank(B,boat,T+1).
+
 %-------------------------
 %Goal
-goal_reached:- at_bank(person(X),right,T), time(T), person(X).
+goal_reached :- at_bank(right,m1,T), at_bank(right,w1,T), at_bank(right,m2,T), at_bank(right,w2,T), at_bank(right,m3,T), at_bank(right,w3,T), at_bank(right,boat,T).
 :- not goal_reached.
 %-------------------------
-
+%Action
+{cross(P,T):person(P)} <= 2 :- time(T).
+:- at_bank(B,boat,T), at_bank(B1,P,T), cross(P,T), opposite(B,B1), person(P),time(T).
+at_bank(B1,P,T+1):-cross(P,T), at_bank(B,P,T),opposite(B,B1), time(T).
+at_bank(B1,boat,T+1):-cross(P,T), at_bank(B,boat,T),opposite(B,B1), time(T).
+-at_bank(B,P,T+1):-cross(P,T), at_bank(B,P,T),time(T).
+-at_bank(B,boat,T+1):-cross(P,T), at_bank(B,boat,T),time(T).
+:- cross(P,T), cross(Q,T),man(P),woman(Q), not married(P,Q), time(T).
+:- at_bank(B,M,T),at_bank(B,Q,T),man(M),woman(Q),man(H),not at_bank(B,H,T),married(H,Q),H!=M,time(T).
+#show cross/2.
